@@ -1,0 +1,47 @@
+from flask import g, jsonify, request
+from models import User, Item
+from app import app, db
+
+
+@app.route('/bucketlists/<int:id>/items', methods=['POST'])
+def add_item(id):
+    bucketlist = Bucketlist.query.get_or_404(id)
+    item = Item(bucketlist_id=bucketlist)
+        if not Item.query.filter_by(name=data['name'], bucketlist_id=data['bucketlist_id']):
+            if len(data['name']) != 0:
+                Item.name = data['name']
+            else:
+                return 'Missing name.'
+            if 'done' in data:
+                Item.done = data['done']
+        else:
+            return'Item name already in use.'
+    db.session.add(item)
+    db.session.commit()
+    return {}, 201, {'Location': bucketlist.get_url()}
+
+
+@app.route('/bucketlists/<int:id>/items/<item_id')
+def update_item(id, item_id):
+    item = Item.query.filter_by(bucketlist_id=id, id=item_id).first_or_404()
+    if data['name']:
+        if not Item.query.filter_by(name=data['name'], bucketlist_id=data['bucketlist_id']):
+            if len(data['name']) != 0:
+                Item.name = data['name']
+            else:
+                return 'Missing name.'
+            if 'done' in data:
+                Item.done = data['done']
+        else:
+            return'Item name already in use.'
+    db.session.add(item)
+    db.session.commit()
+    return {}
+
+
+@app.route('/bucketlists/<int:id>/items/<item_id')
+def delete_item(id, item_id):
+    item = Item.query.filter_by(bucketlist_id=id, id=item_id).first_or_404()
+    db.session.delete(item)
+    db.session.commit()
+    return {}

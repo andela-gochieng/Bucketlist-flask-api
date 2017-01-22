@@ -1,8 +1,7 @@
 from flask.ext.sqlalchemy import SQLAlchemy
 from passlib.apps import custom_app_context as pwd_context
 from config.config import app_config
-from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer,
-                          BadSignature, SignatureExpired)
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 import random
 import string
 
@@ -31,9 +30,7 @@ class User(db.Model):
         s = Serializer(app_config['SECRET_KEY'])
         try:
             data = s.loads(token)
-        except SignatureExpired:
-            return None
-        except BadSignature:
+        except:
             return None
         user = data['id']
         return user
