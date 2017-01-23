@@ -1,6 +1,7 @@
 from flask import g, jsonify, request
-from models import User, BucketList
-from app import app, db
+from .models import User, Bucketlist
+from . import app
+from .models import db
 
 
 @app.route('/bucketlists/', methods=['POST'])
@@ -20,7 +21,7 @@ def create_bucketlist():
 
 
 @app.route('/bucketlists/<int:id>', methods=['GET'])
-def get_specific_bucketlist():
+def get_specific_bucketlist(id):
     return Bucketlist.query.get_or_404(id)
 
 
@@ -30,7 +31,7 @@ def get_all_bucketlists():
 
 
 @app.route('/bucketlists/<int:id>', methods=['PUT'])
-def edit_existing_bucketlist():
+def edit_existing_bucketlist(id):
     bucketlist = Bucketlist.query.get_or_404(id)
     if data['name']:
         if not Bucketlist.query.filter_by(name=data['name'], created_by=g.user.id):
@@ -45,8 +46,7 @@ def edit_existing_bucketlist():
     return {}
 
 
-
-def delete_existing_bucketlist():
+def delete_existing_bucketlist(id):
     bucketlist = Bucketlist.query.get_or_404(id)
     db.session.delete(bucketlist)
     db.session.commit()

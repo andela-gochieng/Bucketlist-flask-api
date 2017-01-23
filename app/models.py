@@ -1,7 +1,8 @@
-from flask.ext.sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy
 from passlib.apps import custom_app_context as pwd_context
-from config.config import app_config
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+# from config.config import app_config
+from flask import g, url_for, current_app
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired
 import random
 import string
 
@@ -11,9 +12,10 @@ SECRET_KEY = ''.join(random.choice(string.ascii_uppercase + string.digits)
 
 
 class User(db.Model):
-    def __init__(self, username, password):
-        self.username = username
-        self.password = password
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(32), unique=True, index=True)
+    psw_hash = db.Column(db.String(128))
 
     def hash_password(self, password):
         self.psw_hash = pwd_context.encrypt(password)
@@ -35,15 +37,6 @@ class User(db.Model):
         user = data['id']
         return user
 
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(32), unique=True, index=True)
-    psw_hash = db.Column(db.String(128))
-
-    def __repr__(self):
-        return "<User(logged_in='%s')>" % (
-            self.created_by)
-
 
 class Bucketlist(db.Model):
 
@@ -56,9 +49,19 @@ class Bucketlist(db.Model):
     created_by = db.Column(db.Integer, db.ForeignKey("users.id"))
     items = db.relationship("Item", backref=db.backref("bucketlists"))
 
-    def __repr__(self):
-        return "<Bucketlist(created_by='%s', created_on='%s')>" % (
-            self.created_by, self.date_created)
+    def get_url(self):
+        return url_for('app.get_specific_bucketlist', id=self.id,
+                       _external=True)
+
+    def return_data(self):
+        items = Item.query.filter_by(bucketlist_id=self.id).all()
+        return {'id': self.id,
+                'name': self.name,
+                'items': [item.return_data() for item in items],
+                'date_created': self.date_created,
+                'date_modified': self.date_modified,
+                'created_by': self.created_by
+                }
 
 
 class Item(db.Model):
@@ -71,6 +74,19 @@ class Item(db.Model):
     date_modified = db.Column(db.DateTime, default=db.func.current_timestamp())
     done = db.Column(db.Boolean, default=False)
 
-    def __repr__(self):
-        return "<Item(name='%s', created_on='%s')>" % (self.name,
-                                                       self.date_created)
+    def get_url(self):
+        return url_for(
+                'app.get_item',
+                item_id=self.id,
+                id=self.bucketlist_id,
+                _external=True
+               )
+
+    def return_data(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'date_created': self.date_created,
+            'date_modified': self.date_modified,
+            'done': self.done,
+        }
