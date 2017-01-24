@@ -1,14 +1,16 @@
 from flask_sqlalchemy import SQLAlchemy
 from passlib.apps import custom_app_context as pwd_context
 # from config.config import app_config
-from flask import g, url_for, current_app
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired
-import random
-import string
+from flask import g, url_for
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, \
+    BadSignature, SignatureExpired
+# import random
+# import string
+from app import app
 
-db = SQLAlchemy()
-SECRET_KEY = ''.join(random.choice(string.ascii_uppercase + string.digits)
-                     for x in range(32))
+db = SQLAlchemy(app)
+# SECRET_KEY = ''.join(random.choice(string.ascii_uppercase + string.digits)
+#                      for x in range(32))
 
 
 class User(db.Model):
@@ -17,23 +19,30 @@ class User(db.Model):
     username = db.Column(db.String(32), unique=True, index=True)
     psw_hash = db.Column(db.String(128))
 
+    def __init__(self, username, password):
+        self.username = username
+        self.password = password
+
     def hash_password(self, password):
         self.psw_hash = pwd_context.encrypt(password)
 
     def verify_password(self, password):
-        return pwd_context.verify(password, self.psw_hash)
+        if pwd_context.verify(password, self.psw_hash):
+            return user
+        else:
+            return 'Invalid username or password.'
 
-    def generate_auth_token(self, expiration=300):
-        s = Serializer(app_config['SECRET_KEY'], expires_in=expiration)
+    def generate_auth_token(self):
+        s = Serializer(app.config['SECRET_KEY'], expires_in=6000)
         return s.dumps({'id': self.id})
 
     @staticmethod
     def verify_auth_token(token):
-        s = Serializer(app_config['SECRET_KEY'])
+        s = Serializer(app.config['SECRET_KEY'], expires_in=6000)
         try:
             data = s.loads(token)
-        except:
-            return None
+        except (BadSignature, SignatureExpired):
+            return False
         user = data['id']
         return user
 
@@ -55,13 +64,14 @@ class Bucketlist(db.Model):
 
     def return_data(self):
         items = Item.query.filter_by(bucketlist_id=self.id).all()
-        return {'id': self.id,
-                'name': self.name,
-                'items': [item.return_data() for item in items],
-                'date_created': self.date_created,
-                'date_modified': self.date_modified,
-                'created_by': self.created_by
-                }
+        return {
+            'id': self.id,
+            'name': self.name,
+            'items': [item.return_data() for item in items],
+            'date_created': self.date_created,
+            'date_modified': self.date_modified,
+            'created_by': self.created_by
+        }
 
 
 class Item(db.Model):
@@ -76,11 +86,11 @@ class Item(db.Model):
 
     def get_url(self):
         return url_for(
-                'app.get_item',
-                item_id=self.id,
-                id=self.bucketlist_id,
-                _external=True
-               )
+            'app.get_item',
+            item_id=self.id,
+            id=self.bucketlist_id,
+            _external=True
+        )
 
     def return_data(self):
         return {
