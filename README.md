@@ -1,1 +1,3 @@
-[![Build Status](https://travis-ci.org/andela-gochieng/Bucketlist-flask-api.svg?branch=master)](https://travis-ci.org/andela-gochieng/Bucketlist-flask-api)
+[![Build Status](https://travis-ci.org/andela-gochieng/Bucketlist-flask-api.svg?branch=develop)](https://travis-ci.org/andela-gochieng/Bucketlist-flask-api)
+[![Code Climate](https://codeclimate.com/github/andela-gochieng/Bucketlist-flask-api/badges/gpa.svg)](https://codeclimate.com/github/andela-gochieng/Bucketlist-flask-api)
+[![Code Health](https://landscape.io/github/andela-gochieng/Bucketlist-flask-api/develop/landscape.svg?style=flat)](https://landscape.io/github/andela-gochieng/Bucketlist-flask-api/develop)
