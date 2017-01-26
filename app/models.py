@@ -21,16 +21,17 @@ class User(db.Model):
 
     def __init__(self, username, password):
         self.username = username
-        self.password = password
+        self.psw_hash = self.hash_password(password)
+
+    def __repr__(self):
+        return "<{} {}>".format(self.username, self.psw_hash)
+
 
     def hash_password(self, password):
-        self.psw_hash = pwd_context.encrypt(password)
+        return pwd_context.encrypt(password)
 
     def verify_password(self, password):
-        if pwd_context.verify(password, self.psw_hash):
-            return user
-        else:
-            return 'Invalid username or password.'
+        return pwd_context.verify(password ,self.psw_hash)
 
     def generate_auth_token(self):
         s = Serializer(app.config['SECRET_KEY'], expires_in=6000)
@@ -53,7 +54,7 @@ class Bucketlist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32), unique=False)
     date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
-    date_modified = db.Column(db.DateTime, default=db.func.current_timestamp())
+    date_modified = db.Column(db.DateTime, onupdate=db.func.current_timestamp())
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     created_by = db.Column(db.Integer, db.ForeignKey("users.id"))
     items = db.relationship("Item", backref=db.backref("bucketlists"))
@@ -81,7 +82,7 @@ class Item(db.Model):
     name = db.Column(db.String(50), unique=False)
     bucketlist_id = db.Column(db.Integer, db.ForeignKey('bucketlists.id'))
     date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
-    date_modified = db.Column(db.DateTime, default=db.func.current_timestamp())
+    date_modified = db.Column(db.DateTime, onupdate=db.func.current_timestamp())
     done = db.Column(db.Boolean, default=False)
 
     def get_url(self):

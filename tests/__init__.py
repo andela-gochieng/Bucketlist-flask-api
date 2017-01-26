@@ -1,20 +1,26 @@
+import unittest
 from flask import Flask
 from flask_testing import TestCase
-from app import app, db
+from app import app
 from config.config import app_config
-from app.models import User, Bucketlist, Item
+from app.models import User, Bucketlist, Item, db
 
 app.config.from_object(app_config['testing'])
 
 
 class BaseTest(TestCase):
+
     def create_app(self):
+
         app = Flask(__name__)
-        app_config['TESTING'] = True
-        return app  
+        
+        return app
 
     def setUp(self):
-    
+        app_config['testing'] = True
+        db.drop_all()
+        db.create_all()
+        self.client = app.test_client()
         user1 = User(username='Kenyan',
                      password='kicc123')
         bucketlist1 = Bucketlist(name='Restaurants to visit',
@@ -24,8 +30,8 @@ class BaseTest(TestCase):
         item2 = Item(name='About Thyme',
                      bucketlist_id=1)
 
-        if __name__ == "__main__":
-            db.create_all()
+        # if __name__ == "__main__":
+        #     db.create_all()
 
         db.session.add(user1)
         db.session.add(bucketlist1)

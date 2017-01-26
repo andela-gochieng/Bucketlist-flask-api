@@ -1,4 +1,5 @@
-import json
+from flask import json
+import unittest
 from tests import BaseTest
 
 
@@ -6,60 +7,49 @@ class TestAuth(BaseTest):
 
     '''Tests the authorization of the users'''
 
-    def test_home(self):
-        '''Tests the response from the home index'''
-        response = self.app.get('/')
-        feedback = json.loads(response.data)
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('Welcome to Achieve! Register or login to continue',
-                      feedback)
-
     def test_register_successfully(self):
 
         '''Tests for a successful registration'''
 
         self.user = {"username": "pineapple",
                                  "password": "fruit1"}
-        response = self.app.post('/auth/register/', data=self.user)
+        response = self.client.post('/auth/register', data=json.dumps(self.user), content_type="application/json")
         message = json.loads(response.data)
         self.assertEqual(response.status_code, 201)
-        self.assertIn('login now to continue', message['msg'])
+        self.assertIn('created user', message['message'])
 
     def test_register_unsuccessfully(self):
-        self.user = {"username": "pineapple",
+
+        self.user = {"username": "Kenyan",
                                  "password": "fruit1"}
-        self.app.post('/auth/register/', data=self.user)
-        
-        self.user = {"username": "pineapple",
-                                 "password": "fruit1"}
-        response = self.app.post('/auth/register/', data=self.user)
+        response = self.client.post('/auth/register', data=json.dumps(self.user), content_type="application/json")
         message = json.loads(response.data)
-        self.assertEqual(response.status_code, 400)
-        self.assertIn('username already exists', message['msg'])
+        self.assertEqual(response.status_code, 401)
+        self.assertIn('Username already exists', message['message'])
 
     def test_login_successfully(self):
-        self.user = {"username": "pineapple",
-                                 "password": "fruit1"}
-        response = self.app.post('/auth/login/', data=self.user)
-        message = json.loads(response.data)
+        self.user = {"username": "Kenyan",
+                                 "password": "kicc123"}
+        response = self.client.post('/auth/login', data=json.dumps(self.user), content_type="application/json")
+        message = json.loads(response.data.decode("utf-8"))
         self.assertEqual(response.status_code, 200)
-        self.assertIn('successfully logged in', message['msg'])
+        self.assertIn('token', message)
 
     def test_login_without_password(self):
-        self.user = {"username": "pineapple",
+        self.user = {"username": "Kenyan",
                                  "password": ""}
-        response = self.app.post('/auth/login/', data=self.user)
+        response = self.client.post('/auth/login', data=json.dumps(self.user), content_type="application/json")
         message = json.loads(response.data)
-        self.assertEqual(response.status_code, 400)
-        self.assertIn('no password provided', message['msg'])
+        self.assertEqual(response.status_code, 401)
+        self.assertIn('Need username and password to login', message['message'])
 
     def test_login_with_wrong_credentials(self):
         self.user = {"username": "kenyan",
                                  "password": "kicc345"}
-        response = self.app.post('/auth/login/', data=self.user)
+        response = self.client.post('/auth/login', data=json.dumps(self.user), content_type="application/json")
         message = json.loads(response.data)
-        self.assertEqual(response.status_code, 400)
-        self.assertIn('wrong username or password provided', message['msg'])
+        self.assertEqual(response.status_code, 406)
+        self.assertIn('Username or password is invalid.', message['message'])
 
 
 
