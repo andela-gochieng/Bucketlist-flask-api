@@ -46,7 +46,7 @@ class TestBucketlists(BaseTest):
 
     def test_get_all_bucketlists(self):
         self.login()
-        response = self.client.get('/bucketlists/', headers={"Authorization":
+        response = self.client.get('/bucketlists', headers={"Authorization":
                                                              "Bearer {}".format(self.token)},
                                    content_type="application/json")
         self.assertEqual(response.status_code, 200)

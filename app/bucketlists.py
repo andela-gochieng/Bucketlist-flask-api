@@ -44,7 +44,7 @@ def get_specific_bucketlist(id):
     return jsonify({"message": "Bucketlist not found"}), 404
 
 
-@app.route('/bucketlists/', methods=['GET'])
+@app.route('/bucketlists', methods=['GET'])
 @auth.login_required
 def get_all_bucketlists():
     bucketlists = db.session.query(Bucketlist).filter_by(
@@ -105,6 +105,16 @@ def custom_error(e):
         'status': 405,
         'error': 'method not supported',
         'message': 'the method is not supported'
+    })
+    res.status_code = 405
+    return res
+
+@app.errorhandler(405)
+def internal_server_error(e):
+    res = jsonify({
+        'status': 500,
+        'error': 'internal_server_error',
+        'message': 'internal_server_error'
     })
     res.status_code = 405
     return res
