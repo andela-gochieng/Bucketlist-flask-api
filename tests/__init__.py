@@ -1,4 +1,3 @@
-import unittest
 from flask import Flask
 from flask_testing import TestCase
 from app import app
@@ -13,7 +12,6 @@ class BaseTest(TestCase):
     def create_app(self):
 
         app = Flask(__name__)
-        
         return app
 
     def setUp(self):
@@ -29,11 +27,11 @@ class BaseTest(TestCase):
                      bucketlist_id=1)
         item2 = Item(name='About Thyme',
                      bucketlist_id=1)
-
-        # if __name__ == "__main__":
-        #     db.create_all()
+        user2 = User(username = 'Ugandan',
+                     password = 'kampala')
 
         db.session.add(user1)
+        db.session.add(user2)
         db.session.add(bucketlist1)
         db.session.add(item1)
         db.session.add(item2)

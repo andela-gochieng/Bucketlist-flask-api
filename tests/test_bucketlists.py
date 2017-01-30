@@ -22,11 +22,11 @@ class TestBucketlists(BaseTest):
     def test_create_duplicate_bucketlist(self):
         self.login()
         bucketlist = {'name': 'Restaurants to visit'}
-        response = self.client.post('/bucketlists/', data=json.dumps(bucketlist),
+        response = self.client.post('/bucketlists', data=json.dumps(bucketlist),
                                     headers={"Authorization": "Bearer {}".
                                              format(self.token)},
                                     content_type="application/json")
-        self.assertEqual(response.status_code, 405)
+        self.assertEqual(response.status_code, 400)
 
     def test_get_specific_bucketlist(self):
         self.login()
@@ -47,18 +47,19 @@ class TestBucketlists(BaseTest):
     def test_get_all_bucketlists(self):
         self.login()
         response = self.client.get('/bucketlists', headers={"Authorization":
-                                                             "Bearer {}".format(self.token)},
+                                   "Bearer {}".format(self.token)},
                                    content_type="application/json")
         self.assertEqual(response.status_code, 200)
 
     def test_get_nonexistent_bucketlists(self):
-        self.user = {"username": "pineapple",
-                     "password": "fruit1"}
-        response = self.client.post(
-            '/auth/register/', data=json.dumps(self.user))
-        response = self.client.post('/auth/login/', data=json.dumps(self.user))
-        response = self.client.post('/bucketlists/')
-        self.assertEqual(response.status_code, 405)
+        self.user = db.session.query(User).filter_by(
+            username="Ugandan").first()
+        self.token = self.user.generate_auth_token().decode("utf-8")
+        response = self.client.post('/bucketlists',
+                                    headers={"Authorization":
+                                             "Bearer {}".format(self.token)},
+                                    content_type="application/json")
+        self.assertEqual(response.status_code, 400)
 
     def test_edit_existing_bucketlist(self):
         self.login()

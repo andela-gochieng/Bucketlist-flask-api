@@ -29,9 +29,9 @@ def create_bucketlist():
     if not db.session.query(Bucketlist).filter_by(
             name=name, created_by=g.user.id).all():
         if not name:
-            return jsonify({"message": "Missing name."}), 401
+            return jsonify({"message": "Missing name."}), 400
     else:
-        return jsonify({"message": "Bucketlist name already exists."}), 401
+        return jsonify({"message": "Bucketlist name already exists."}), 400
     db.session.add(Bucketlist(created_by=g.user.id, name=name))
     db.session.commit()
     return jsonify({"message": "Bucketlist created."}), 201
@@ -58,7 +58,7 @@ def get_all_bucketlists():
     bucketlists = db.session.query(Bucketlist).filter_by(
         created_by=g.user.id).all()
     if not bucketlists:
-        return jsonify({"message": "Bucketlist not found"}), 404
+        return jsonify({"message": "Bucketlist not found"}), 400
     if request.args.get('q') and request.args.get('limit'):
         bucketlists = db.session.query(Bucketlist).filter_by(
             created_by=g.user.id,
