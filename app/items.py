@@ -22,7 +22,7 @@ def verify_token(token):
 @app.route('/bucketlists/<int:id>/items', methods=['POST'])
 @auth.login_required
 def add_item(id):
-     '''Creates an item by providing a unique name of the item to be
+    '''Creates an item by providing a unique name of the item to be
     created and the ID of the bucketlist'''
 
     name = request.json.get('name')
@@ -30,9 +30,9 @@ def add_item(id):
         if not db.session.query(Item).filter_by(name=name, bucketlist_id=id).first():
             if len(name) == 0:
                 return jsonify({"message": "Missing name."}), 401
-            db.session.add(Item(bucketlist_id=id,name=name))
+            db.session.add(Item(bucketlist_id=id, name=name))
             db.session.commit()
-            return jsonify({"message":"Item created."}), 201
+            return jsonify({"message": "Item created."}), 201
 
         else:
             return jsonify({"message": "Item name already exists."}), 401
