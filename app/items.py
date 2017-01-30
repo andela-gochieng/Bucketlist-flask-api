@@ -1,7 +1,7 @@
 from flask import g, jsonify, request
-from .models import User, Bucketlist, Item
-from . import app
-from .models import db
+from models import User, Bucketlist, Item
+from app import app
+from models import db
 from flask_httpauth import HTTPTokenAuth
 
 
@@ -22,6 +22,9 @@ def verify_token(token):
 @app.route('/bucketlists/<int:id>/items', methods=['POST'])
 @auth.login_required
 def add_item(id):
+     '''Creates an item by providing a unique name of the item to be
+    created and the ID of the bucketlist'''
+
     name = request.json.get('name')
     if db.session.query(Bucketlist).filter_by(id=id, created_by=g.user.id).first():
         if not db.session.query(Item).filter_by(name=name, bucketlist_id=id).first():
@@ -39,6 +42,8 @@ def add_item(id):
 @app.route('/bucketlists/<int:id>/items/<int:item_id>', methods=['GET'])
 @auth.login_required
 def get_item(id, item_id):
+    '''Enables viewing of one item specified by the ID number'''
+
     if not db.session.query(Bucketlist).filter_by(created_by=g.user.id,id=id).first():
         return jsonify({"message": "Bucketlist does not exist"})
     item = db.session.query(Item).filter_by(bucketlist_id=id,id=item_id).first()
@@ -50,6 +55,9 @@ def get_item(id, item_id):
 @app.route('/bucketlists/<int:id>/items', methods=['GET'])
 @auth.login_required
 def get_all_items(id):
+    '''Enables viewing of all the buckelists belonging to the current user.
+    Shows the details of each buckelist and its subsequent items '''
+
     if not db.session.query(Bucketlist).filter_by(created_by=g.user.id,id=id).first():
         return jsonify({"message": "Bucketlist does not exist"})
     items = db.session.query(Item).filter_by(bucketlist_id=id).all()
@@ -62,6 +70,9 @@ def get_all_items(id):
 @app.route('/bucketlists/<int:id>/items/<int:item_id>', methods=['PUT'])
 @auth.login_required
 def update_item(id, item_id):
+    '''Allows the change of the name of the item but the name must not
+    already exist. The done status can also be changed to true of false'''
+
     if not db.session.query(Bucketlist).filter_by(created_by=g.user.id,id=id).first():
         return jsonify({"message": "Bucketlist does not exist"}), 404
     name = request.json.get("name")
@@ -88,6 +99,9 @@ def update_item(id, item_id):
 @app.route('/bucketlists/<int:id>/items/<int:item_id>', methods=['DELETE'])
 @auth.login_required
 def delete_item(id, item_id):
+    '''Permanently removes the item from the list of items in the specified 
+    buckelist'''
+
     if db.session.query(Bucketlist).filter_by(id=id, created_by=g.user.id).first():
         item = db.session.query(Item).get(item_id)
         if item:

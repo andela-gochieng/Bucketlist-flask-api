@@ -1,16 +1,12 @@
+from app import app
 from flask_sqlalchemy import SQLAlchemy
-from passlib.apps import custom_app_context as pwd_context
-# from config.config import app_config
 from flask import g, url_for
+from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, \
     BadSignature, SignatureExpired
-# import random
-# import string
-from app import app
+
 
 db = SQLAlchemy(app)
-# SECRET_KEY = ''.join(random.choice(string.ascii_uppercase + string.digits)
-#                      for x in range(32))
 
 
 class User(db.Model):
@@ -23,22 +19,26 @@ class User(db.Model):
         self.username = username
         self.psw_hash = self.hash_password(password)
 
-    def __repr__(self):
-        return "<{} {}>".format(self.username, self.psw_hash)
-
-
     def hash_password(self, password):
+        '''Encrypt the password given and returns a hashed version for storage.'''
+
         return pwd_context.encrypt(password)
 
     def verify_password(self, password):
-        return pwd_context.verify(password ,self.psw_hash)
+        '''Compares the password given when the user logs in with the password
+        hash stored in the database.'''
+
+        return pwd_context.verify(password, self.psw_hash)
 
     def generate_auth_token(self):
+        '''Generates a token once the password has been verified.'''
         s = Serializer(app.config['SECRET_KEY'], expires_in=6000)
         return s.dumps({'id': self.id})
 
     @staticmethod
     def verify_auth_token(token):
+        '''Verifies that the token provided with each request is valid before
+        the request is serviced'''
         s = Serializer(app.config['SECRET_KEY'], expires_in=6000)
         try:
             data = s.loads(token)
@@ -59,11 +59,11 @@ class Bucketlist(db.Model):
     created_by = db.Column(db.Integer, db.ForeignKey("users.id"))
     items = db.relationship("Item", backref=db.backref("bucketlists"))
 
-    def get_url(self):
-        return url_for('app.get_specific_bucketlist', id=self.id,
-                       _external=True)
 
     def return_data(self):
+        '''Displays the details of each bucketlist when the 'GET' method is
+        used'''
+
         items = Item.query.filter_by(bucketlist_id=self.id).all()
         return {
             'id': self.id,
@@ -85,15 +85,11 @@ class Item(db.Model):
     date_modified = db.Column(db.DateTime, onupdate=db.func.current_timestamp())
     done = db.Column(db.Boolean, default=False)
 
-    def get_url(self):
-        return url_for(
-            'app.get_item',
-            item_id=self.id,
-            id=self.bucketlist_id,
-            _external=True
-        )
-
+    
     def return_data(self):
+        '''Displays the details of each item when the 'GET' method is
+        used'''
+
         return {
             'id': self.id,
             'name': self.name,
