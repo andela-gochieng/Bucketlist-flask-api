@@ -1,7 +1,7 @@
 from flask import g, jsonify, request
-from models import User, Bucketlist, Item
+from app.models import User, Bucketlist, Item
 from app import app
-from models import db
+from app.models import db
 from flask_httpauth import HTTPTokenAuth
 
 
