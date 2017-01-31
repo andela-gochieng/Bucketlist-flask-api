@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/andela-gochieng/Bucketlist-flask-api.svg?branch=develop)](https://travis-ci.org/andela-gochieng/Bucketlist-flask-api)
+[![Build Status](https://travis-ci.org/andela-gochieng/Bucketlist-flask-api.svg?branch=develop&update=1)](https://travis-ci.org/andela-gochieng/Bucketlist-flask-api)
 [![Coverage Status](https://coveralls.io/repos/github/andela-gochieng/Bucketlist-flask-api/badge.svg?branch=master)](https://coveralls.io/github/andela-gochieng/Bucketlist-flask-api?branch=master)
 [![Code Health](https://landscape.io/github/andela-gochieng/Bucketlist-flask-api/develop/landscape.svg?style=flat)](https://landscape.io/github/andela-gochieng/Bucketlist-flask-api/develop)
 ## Bucketlist Flask API
