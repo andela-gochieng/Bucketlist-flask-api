@@ -1,4 +1,4 @@
-from flask import g, jsonify, request
+from flask import g, jsonify, url_for, request
 from app.models import User, Bucketlist
 from app import app
 from app.models import db
@@ -15,18 +15,18 @@ def verify_token(token):
     user_id = User.verify_auth_token(token=token)
     if not user_id:
         return False
-    g.user = db.session.query(User).filter_by(id=user_id).first()
+    g.user = User.query.filter_by(id=user_id).first()
     return True
 
 
-@app.route('/bucketlists', methods=['POST'])
+@app.route('/bucketlists/', methods=['POST'])
 @auth.login_required
 def create_bucketlist():
     '''Creates a buckelist by providing a unique name of the bucketlist to be
     created'''
 
     name = request.json.get('name')
-    if not db.session.query(Bucketlist).filter_by(
+    if not Bucketlist.query.filter_by(
             name=name, created_by=g.user.id).all():
         if not name:
             return jsonify({"message": "Missing name."}), 400
@@ -42,42 +42,64 @@ def create_bucketlist():
 def get_specific_bucketlist(id):
     '''Enables viewing of one buckelist specified by the ID number'''
 
-    bucketlist = db.session.query(Bucketlist).filter_by(
+    bucketlist = Bucketlist.query.filter_by(
         id=id, created_by=g.user.id).first()
     if bucketlist:
         return jsonify(bucketlist.return_data()), 200
     return jsonify({"message": "Bucketlist not found"}), 404
 
 
-@app.route('/bucketlists', methods=['GET'])
+@app.route('/bucketlists/', methods=['GET'])
 @auth.login_required
 def get_all_bucketlists():
     '''Enables viewing of all the buckelists belonging to the current user.
     Shows the details of each buckelist and its subsequent items '''
 
-    bucketlists = db.session.query(Bucketlist).filter_by(
-        created_by=g.user.id).all()
-    if not bucketlists:
-        return jsonify({"message": "Bucketlist not found"}), 400
-    if request.args.get('q') and request.args.get('limit'):
-        bucketlists = db.session.query(Bucketlist).filter_by(
-            created_by=g.user.id,
-            name=request.args.get('q').limit(request.args.get('limit'))).all()
-    if request.args.get('q'):
-        print(request.args)
-        bucketlists = db.session.query(Bucketlist).filter_by(
-            created_by=g.user.id, name=request.args.get('q')).all()
-    if request.args.get('limit'):
-        bucketlists = db.session.query(Bucketlist).filter_by(
-            created_by=g.user.id.limit(request.args.get('limit'))).all()
-    elif not request.args.get('q') and not request.args.get('limit'):
-        bucketlists = db.session.query(Bucketlist).filter_by(
-            created_by=g.user.id).all()
+    try:
+        page = int(request.args.get('page', 1))
+        limit = min(int(request.args.get('limit', 20)), 20)
+        search_name = request.args.get('q', '')
+    except:
+        return jsonify({"error": "limit and page must be integers"}), 400
+    bucketlists = Bucketlist.query.filter_by(
+        created_by=g.user.id).filter(
+        Bucketlist.name.like('%{}%'.format(search_name))).paginate(
+        page=page, per_page=limit)
 
-    list_bucketlists = []
-    for item in bucketlists:
-        list_bucketlists.append(item.return_data())
-    return jsonify(list_bucketlists), 200
+    if bucketlists.has_prev:
+        previous_url = url_for(
+            request.endpoint,
+            page=bucketlists.prev_num,
+            limit=limit,
+            _external=True
+        )
+    else:
+        previous_url = None
+    if bucketlists.has_next:
+        next_url = url_for(
+            request.endpoint,
+            page=bucketlists.next_num,
+            limit=limit,
+            _external=True
+        )
+    else:
+        next_url = None
+    first_url = url_for(request.endpoint, page=1, limit=limit, _external=True)
+    last_url = url_for(
+        request.endpoint, page=bucketlists.pages, limit=limit, _external=True)
+
+    page_info = {
+        "page": page,
+        "limit": limit,
+        "total": bucketlists.total,
+        "pages": bucketlists.pages,
+        "previous": previous_url,
+        "next": next_url,
+        "first_url": first_url,
+        "last_url": last_url
+    }
+    list_bucketlists = [item.return_data() for item in bucketlists.items]
+    return jsonify({"bucketlists": list_bucketlists, "page_meta": page_info}), 200
 
 
 @app.route('/bucketlists/<int:id>', methods=['PUT'])
@@ -88,8 +110,8 @@ def edit_existing_bucketlist(id):
 
     name = request.json.get("name")
     if not name:
-        return jsonify({"message": "Missing name."}), 406
-    bucketlist = db.session.query(Bucketlist).filter_by(
+        return jsonify({"message": "Missing name."}), 400
+    bucketlist = Bucketlist.query.filter_by(
         id=id, created_by=g.user.id).first()
     if not bucketlist:
         return jsonify({"message": "Bucketlist not found."}), 404
@@ -104,7 +126,7 @@ def delete_existing_bucketlist(id):
     '''Permanently removes the bucketlist from the list of bucketlists created
     by the current user'''
 
-    bucketlist = db.session.query(Bucketlist).filter_by(
+    bucketlist = Bucketlist.query.filter_by(
         created_by=g.user.id, id=id).first()
     if bucketlist:
         db.session.delete(bucketlist)

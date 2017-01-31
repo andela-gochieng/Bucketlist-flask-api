@@ -1,12 +1,10 @@
 from app import app
+from run import db
 from flask_sqlalchemy import SQLAlchemy
 from flask import g, url_for
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, \
     BadSignature, SignatureExpired
-
-
-db = SQLAlchemy(app)
 
 
 class User(db.Model):
@@ -55,7 +53,6 @@ class Bucketlist(db.Model):
     name = db.Column(db.String(32), unique=False)
     date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
     date_modified = db.Column(db.DateTime, onupdate=db.func.current_timestamp())
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     created_by = db.Column(db.Integer, db.ForeignKey("users.id"))
     items = db.relationship("Item", backref=db.backref("bucketlists"))
 
@@ -85,7 +82,6 @@ class Item(db.Model):
     date_modified = db.Column(db.DateTime, onupdate=db.func.current_timestamp())
     done = db.Column(db.Boolean, default=False)
 
-    
     def return_data(self):
         '''Displays the details of each item when the 'GET' method is
         used'''
