@@ -1,12 +1,13 @@
 from flask import g, jsonify, request
-from app.models import User, Bucketlist, Item
-from app import app
-from app.models import db
 from flask_httpauth import HTTPTokenAuth
+from app import app
+from app.models import User, Bucketlist, Item
+from app.models import db
 
 
 auth = HTTPTokenAuth(scheme="Bearer")
 db.create_all()
+
 
 @auth.verify_token
 def verify_token(token):
@@ -44,9 +45,9 @@ def add_item(id):
 def get_item(id, item_id):
     '''Enables viewing of one item specified by the ID number'''
 
-    if not Bucketlist.query.filter_by(created_by=g.user.id,id=id).first():
+    if not Bucketlist.query.filter_by(created_by=g.user.id, id=id).first():
         return jsonify({"message": "Bucketlist does not exist"})
-    item = Item.query.filter_by(bucketlist_id=id,id=item_id).first()
+    item = Item.query.filter_by(bucketlist_id=id, id=item_id).first()
     if item:
         return jsonify(item.return_data()), 200
     return jsonify({"message": "Item not found"}), 404
@@ -58,7 +59,7 @@ def get_all_items(id):
     '''Enables viewing of all the buckelists belonging to the current user.
     Shows the details of each buckelist and its subsequent items '''
 
-    if not Bucketlist.query.filter_by(created_by=g.user.id,id=id).first():
+    if not Bucketlist.query.filter_by(created_by=g.user.id, id=id).first():
         return jsonify({"message": "Bucketlist does not exist"})
     items = db.session.query(Item).filter_by(bucketlist_id=id).all()
     list_items = []
@@ -73,7 +74,7 @@ def update_item(id, item_id):
     '''Allows the change of the name of the item but the name must not
     already exist. The done status can also be changed to true of false'''
 
-    if not Bucketlist.query.filter_by(created_by=g.user.id,id=id).first():
+    if not Bucketlist.query.filter_by(created_by=g.user.id, id=id).first():
         return jsonify({"message": "Bucketlist does not exist"}), 404
     name = request.json.get("name")
     done = request.json.get("done")
@@ -96,14 +97,14 @@ def update_item(id, item_id):
         return jsonify({"message": "Done status updated."}), 202
     if name_msg:
         return jsonify({'message': name_msg})
-    if  not name and not done:
+    if not name and not done:
         return jsonify({"message": "Missing parameter."}), 400
 
 
 @app.route('/bucketlists/<int:id>/items/<int:item_id>', methods=['DELETE'])
 @auth.login_required
 def delete_item(id, item_id):
-    '''Permanently removes the item from the list of items in the specified 
+    '''Permanently removes the item from the list of items in the specified
     buckelist'''
 
     if Bucketlist.query.filter_by(id=id, created_by=g.user.id).first():

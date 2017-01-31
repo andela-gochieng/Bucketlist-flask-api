@@ -1,7 +1,7 @@
-from flask import jsonify, g, current_app, request
-from .models import User
-from .models import db
+from flask import jsonify, request
 from app import app, auth
+from app.models import User
+from app.models import db
 
 
 db.create_all()
@@ -30,7 +30,7 @@ def login():
     else:
         username = request.json.get("username")
         password = request.json.get("password")
-        user = db.session.query(User).filter_by(username=username).first()
+        user = User.query.filter_by(username=username).first()
         if not user or not user.verify_password(password):
             return jsonify({"message": "Username or password is invalid."
                             }), 406

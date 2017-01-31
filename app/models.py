@@ -1,10 +1,8 @@
-from app import app
-from run import db
-from flask_sqlalchemy import SQLAlchemy
-from flask import g, url_for
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, \
     BadSignature, SignatureExpired
+from app import app
+from run import db
 
 
 class User(db.Model):
@@ -18,7 +16,8 @@ class User(db.Model):
         self.psw_hash = self.hash_password(password)
 
     def hash_password(self, password):
-        '''Encrypt the password given and returns a hashed version for storage.'''
+        '''Encrypt the password given and returns
+        a hashed version for storage.'''
 
         return pwd_context.encrypt(password)
 

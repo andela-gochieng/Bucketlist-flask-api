@@ -1,8 +1,9 @@
 from flask import g, jsonify, url_for, request
+from flask_httpauth import HTTPTokenAuth
 from app.models import User, Bucketlist
 from app import app
 from app.models import db
-from flask_httpauth import HTTPTokenAuth
+
 
 auth = HTTPTokenAuth(scheme="Bearer")
 db.create_all()
