@@ -25,7 +25,7 @@ Install the dependencies
 ```
 pip install -r requirements.txt
 ```
-Run the program in interactive mode
+Run the program
 ```
 python run.py 
 ```
@@ -34,7 +34,7 @@ python run.py
 | -------- | ------------- | --------- |--------------- |
 | `/api/v1/auth/register` | POST  | Register user | FALSE |
 |  `/api/v1/auth/login` | POST | Login user | FALSE |
-| `/api/v1/bucketlists` | GET, POST | View user's bucketlists | TRUE |
+| `/api/v1/bucketlists/` | GET, POST | View user's bucketlists | TRUE |
 | `/api/v1/bucketlists/<id>` | GET, PUT, DELETE | Change single bucketlist | TRUE |
-| `/api/v1/bucketlists/<id>/items` | GET, POST | View items in a bucketlist | TRUE |
+| `/api/v1/bucketlists/<id>/items/` | GET, POST | View items in a bucketlist | TRUE |
 | `/api/v1/bucketlists/<id>/items/<item_id>` | GET, PUT, DELETE| A single bucketlist item | TRUE |
